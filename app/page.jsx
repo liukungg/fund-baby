@@ -3897,10 +3897,6 @@ export default function HomePage() {
         </div>
       </div>
 
-      <div style={{ textAlign: 'center', color: '#ff4d4f', fontSize: '13px', marginBottom: '16px', fontWeight: 500 }}>
-        提示：不登陆个人数据保存在个人浏览器中，登陆后数据将保存在线上数据库
-      </div>
-
       <div className="grid">
         <div className="col-12 glass card add-fund-section" role="region" aria-label="添加基金">
           <div className="title" style={{ marginBottom: 12 }}>
@@ -4738,6 +4734,9 @@ export default function HomePage() {
       </AnimatePresence>
 
       <div className="footer">
+        <div style={{ color: '#ff4d4f', fontSize: '13px', marginBottom: '12px', fontWeight: 500 }}>
+          提示：不登陆个人数据保存在个人浏览器中，登陆后数据将保存在线上数据库
+        </div>
         <p style={{ marginBottom: 8 }}>数据源：实时估值与重仓直连东方财富，仅供个人学习及参考使用。数据可能存在延迟，不作为任何投资建议</p>
         <p style={{ marginBottom: 12 }}>注：估算数据与真实结算数据会有1%左右误差，非股票型基金误差较大</p>
         <div style={{ marginTop: 12, opacity: 0.8, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
