@@ -47,11 +47,27 @@
   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`：Supabase 匿名公钥
   - `NEXT_PUBLIC_WEB3FORMS_ACCESS_KEY`：Web3Forms Access Key
 
+注：如不使用登录和反馈功能，可无需设置
+
 4. 运行开发服务器：
    ```bash
    npm run dev
    ```
    访问 [http://localhost:3000](http://localhost:3000) 查看效果。
+
+### supabase 配置说明
+1. 邮件数量修改
+
+    supabase 免费项目自带每小时2条邮件服务。如果觉得额度不够，可以改成自己的邮箱SMTP。修改路径在 supabase控制台 → Authentication → Email → SMTP Settings。  
+    之后可在 Rate Limits ，自由修改每小时邮件数量。
+
+2. 修改接收到的邮件为验证码
+在 supabase控制台 → Authentication → Email → Confirm sign up，选择 `{{.token}}`。  
+
+3. 目前项目用到的 sql 语句，查看项目 supabase.sql 文件。
+
+更多 supabase 相关内容查阅官方文档。
+
 
 ### 构建与部署
 
