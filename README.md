@@ -51,7 +51,7 @@
    npm install
    ```
 
-3. 配置环境变量（下面有配置说明）：
+3. （可选）配置环境变量（下面有配置说明）：
    ```bash
    cp env.example .env.local
    ```
