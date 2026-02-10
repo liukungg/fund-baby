@@ -1,7 +1,18 @@
 # 实时基金估值 (Real-time Fund Valuation)
 
-一个基于 Next.js 开发的纯前端基金估值与重仓股实时追踪工具。采用玻璃拟态设计（Glassmorphism），支持移动端适配，且无需后端服务器即可运行。
-预览地址：[https://ningzhengsheng/real-time-fund/](https://ningzhengsheng.cn/real-time-fund/)
+**在线预览地址：[https://ningzhengsheng/real-time-fund/](https://ningzhengsheng.cn/real-time-fund/)**
+> 由于某些平台不能在实时看见基金的估值，所以做了一个基金估值的网站。
+
+> 一个基于 Next.js 开发的纯前端基金估值与重仓股实时追踪工具。采用玻璃拟态设计（Glassmorphism），支持移动端适配，且无需后端服务器即可运行。
+
+
+## 📖 使用说明
+
+1. **添加基金**：在顶部输入框输入 6 位基金代码（如 `110022`），点击“添加”。
+2. **查看详情**：卡片将展示实时估值及前 10 重仓股的占比与今日涨跌。
+3. **调整频率**：点击右上角“设置”图标，可调整自动刷新的间隔时间。
+4. **删除基金**：点击卡片右上角的红色删除图标即可移除。
+
 
 ## ✨ 特性
 
@@ -13,15 +24,17 @@
 - **自选功能**：支持将基金添加至“自选”列表，通过 Tab 切换展示全部基金或仅自选基金。自选状态支持持久化及同步清理。
 - **可自定义频率**：支持设置自动刷新间隔（5秒 - 300秒），并提供手动刷新按钮。
 
+
 ## 🛠 技术栈
 
-- **框架**：[Next.js官网](https://nextjs.org/) [Next.js入门指南：从零构建现代Web应用](https://ningzhengsheng.cn/2026/02/10/Nextjs%E7%BD%91%E9%A1%B5%E5%BC%80%E5%8F%91%E5%85%A5%E9%97%A8%E6%8C%87%E5%8D%97/)
+- **框架**：[Next.js官网](https://nextjs.org/) , [Next.js入门指南：从零构建现代Web应用](https://ningzhengsheng.cn/2026/02/10/Nextjs%E7%BD%91%E9%A1%B5%E5%BC%80%E5%8F%91%E5%85%A5%E9%97%A8%E6%8C%87%E5%8D%97/)
 - **样式**：原生 CSS (Global CSS) + 玻璃拟态设计
 - **数据源**：
   - 基金估值：天天基金 (JSONP)
   - 重仓数据：东方财富 (HTML Parsing)
   - 股票行情：腾讯财经 (Script Tag Injection)
 - **部署**：GitHub Actions + GitHub Pages
+
 
 ## 🚀 快速开始
 
@@ -38,16 +51,16 @@
    npm install
    ```
 
-3. 配置环境变量：
+3. 配置环境变量（下面有配置说明）：
    ```bash
    cp env.example .env.local
    ```
    按照 `env.example` 填入以下值：
-  - `NEXT_PUBLIC_SUPABASE_URL`：Supabase 项目 URL
-  - `NEXT_PUBLIC_SUPABASE_ANON_KEY`：Supabase 匿名公钥
-  - `NEXT_PUBLIC_WEB3FORMS_ACCESS_KEY`：Web3Forms Access Key
+   - `NEXT_PUBLIC_SUPABASE_URL`：Supabase 项目 URL
+   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`：Supabase 匿名公钥
+   - `NEXT_PUBLIC_WEB3FORMS_ACCESS_KEY`：Web3Forms Access Key
 
-注：如不使用登录和反馈功能，可无需设置
+   注：如不使用登录和反馈功能，可无需设置
 
 4. 运行开发服务器：
    ```bash
@@ -56,8 +69,23 @@
    访问 [http://localhost:3000](http://localhost:3000) 查看效果。
 
 ### supabase 配置说明
-1. 邮件数量修改
+#### 获取配置：
+1. 获取 Supabase 配置
+   - Supabase 用于数据存储（云端同步）和用户登录功能
+   - 访问Supabase官网 [https://supabase.com/](https://supabase.com/) 并注册/登录账号。
+   - 点击 "New Project" 创建一个新项目。
+   - 项目创建完成后，进入项目仪表盘。
+   - 点击左侧菜单底部的 Settings (设置) 图标（齿轮形状），然后选择 Data API。 在 Project URL 下找到 URL，这就是 NEXT_PUBLIC_SUPABASE_URL。
+   - 在 API keys 下找到 Publishable key，这就是 NEXT_PUBLIC_SUPABASE_ANON_KEY。
 
+2. 获取 Web3Forms 配置
+   - Web3Forms 用于接收网页上的“意见反馈”邮件。
+   - 访问Web3Forms 官网 [https://web3forms.com/](https://web3forms.com/)。
+   - 在首页输入您的接收邮箱地址，点击 "Create your Access Key"。
+   - 您的邮箱将会收到一封包含 Access Key 的邮件，这串字符就是 NEXT_PUBLIC_WEB3FORMS_ACCESS_KEY。
+
+#### 配置说明：
+1. 邮件数量修改
     supabase 免费项目自带每小时2条邮件服务。如果觉得额度不够，可以改成自己的邮箱SMTP。修改路径在 supabase控制台 → Authentication → Email → SMTP Settings。  
     之后可在 Rate Limits ，自由修改每小时邮件数量。
 
@@ -69,10 +97,12 @@
 更多 supabase 相关内容查阅官方文档。
 
 
-### 构建与部署
+### 构建与Github部署
 
-本项目已配置 GitHub Actions。每次推送到 `main` 分支时，会自动执行构建并部署到 GitHub Pages。
-如需使用 GitHub Actions 部署，请在 GitHub 项目 Settings → Secrets and variables → Actions 中创建对应的 Repository secrets（字段名称与 `.env.local` 保持一致）。
+本项目已配置 GitHub Actions，可以直接部署在github上。
+（操作：Settings → Pages → Build and deployment → Source选择github Actions）。
+每次推送到 `main` 分支时，会自动执行构建并部署到 GitHub Pages。
+如需使用登陆功能，请在 GitHub 项目 Settings → Secrets and variables → Actions 中创建对应的 Repository secrets（字段名称与 `.env.local` 保持一致）。
 
 若要手动构建：
 ```bash
@@ -97,17 +127,11 @@ docker run -d -p 3000:3000 --name fund real-time-fund
 docker compose up -d
 ```
 
-## 📖 使用说明
-
-1. **添加基金**：在顶部输入框输入 6 位基金代码（如 `110022`），点击“添加”。
-2. **查看详情**：卡片将展示实时估值及前 10 重仓股的占比与今日涨跌。
-3. **调整频率**：点击右上角“设置”图标，可调整自动刷新的间隔时间。
-4. **删除基金**：点击卡片右上角的红色删除图标即可移除。
-
 
 ## 📝 免责声明
 
 本项目所有数据均来自公开接口，仅供个人学习及参考使用。数据可能存在延迟，不作为任何投资建议。
+
 
 ## 📄 开源协议 (License)
 
@@ -119,7 +143,9 @@ docker compose up -d
 
 完整协议文本见仓库根目录 [LICENSE](./LICENSE) 文件，或 [GNU AGPL v3 官方说明](https://www.gnu.org/licenses/agpl-3.0.html)。
 
+
 ---
 ## 💬 联系
 Github主页：[https://github.com/zhengshengning](https://github.com/zhengshengning)
+
 个人博客：[https://ningzhengsheng.cn](https://ningzhengsheng.cn)
