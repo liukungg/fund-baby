@@ -9,12 +9,13 @@ import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
 import Announcement from "./components/Announcement";
 import FundTrendChart from "./components/FundTrendChart";
+import FundIntradayChart from "./components/FundIntradayChart";
 import { DatePicker, DonateTabs, NumericInput, Stat } from "./components/Common";
 import { ChevronIcon, CloseIcon, CloudIcon, DragIcon, EditIcon, ExitIcon, EyeIcon, EyeOffIcon, GridIcon, ListIcon, LoginIcon, LogoutIcon, MailIcon, MoonIcon, PinIcon, PinOffIcon, PlusIcon, RefreshIcon, SettingsIcon, SortIcon, StarIcon, SunIcon, SwitchIcon, TrashIcon, UpdateIcon, UserIcon } from "./components/Icons";
 import githubImg from "./assets/github.svg";
 import wxChatImg from "./assets/wxChat.jpeg";
 import { supabase, isSupabaseConfigured } from './lib/supabase';
-import { fetchFundData, fetchLatestRelease, fetchShanghaiIndexDate, fetchSmartFundNetValue, searchFunds, submitFeedback } from './api/fund';
+import { fetchFundData, fetchIntradayData, fetchLatestRelease, fetchShanghaiIndexDate, fetchSmartFundNetValue, searchFunds, submitFeedback } from './api/fund';
 import packageJson from '../package.json';
 
 dayjs.extend(utc);
@@ -1954,6 +1955,7 @@ function GroupSummary({ funds, holdings, groupName, getProfit }) {
 
 export default function HomePage() {
   const [funds, setFunds] = useState([]);
+  const [intradayMap, setIntradayMap] = useState({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [theme, setTheme] = useState('dark');
@@ -3036,6 +3038,10 @@ export default function HomePage() {
         try {
           const data = await fetchFundData(f.CODE);
           newFunds.push(data);
+          // 异步加载分时数据
+          fetchIntradayData(f.CODE).then(intra => {
+              if (intra) setIntradayMap(prev => ({ ...prev, [f.CODE]: intra }));
+          });
         } catch (e) {
           console.error(`添加基金 ${f.CODE} 失败`, e);
         }
@@ -3068,6 +3074,10 @@ export default function HomePage() {
         try {
           const data = await fetchFundData(c);
           updated.push(data);
+          // 异步加载分时数据
+          fetchIntradayData(c).then(intra => {
+              if (intra) setIntradayMap(prev => ({ ...prev, [c]: intra }));
+          });
         } catch (e) {
           console.error(`刷新基金 ${c} 失败`, e);
           // 失败时从当前 state 中寻找旧数据
@@ -4708,11 +4718,35 @@ export default function HomePage() {
                                   })()}
                                 </div>
 
-                                {/* 历史净值走势图 */}
+                                {/* 历史净值走势图 (日线) - 默认收起 */}
                                 {Array.isArray(f.historyTrend) && f.historyTrend.length > 0 && (
-                                  <div style={{ marginBottom: 12, height: 180 }}>
-                                    <FundTrendChart data={f.historyTrend} />
-                                  </div>
+                                  <details style={{ marginBottom: 12 }} className="chart-details">
+                                    <summary style={{ fontSize: '12px', color: '#666', marginBottom: 4, cursor: 'pointer', outline: 'none', listStyle: 'none', display: 'flex', alignItems: 'center', gap: 4 }}>
+                                        <ChevronIcon width="12" height="12" className="arrow" style={{ transform: 'rotate(-90deg)', transition: 'transform 0.2s' }} />
+                                        <span>近90日净值走势</span>
+                                    </summary>
+                                    <div style={{ height: 180, marginTop: 8 }}>
+                                      <FundTrendChart data={f.historyTrend} />
+                                    </div>
+                                  </details>
+                                )}
+
+                                {/* 当日分时估值图 (仅当有数据时显示) - 默认收起 */}
+                                {intradayMap[f.code] && intradayMap[f.code].length > 0 && (
+                                    <details style={{ marginBottom: 12 }} className="chart-details">
+                                        <summary style={{ fontSize: '12px', color: '#666', marginBottom: 4, cursor: 'pointer', outline: 'none', listStyle: 'none', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                                                <ChevronIcon width="12" height="12" className="arrow" style={{ transform: 'rotate(-90deg)', transition: 'transform 0.2s' }} />
+                                                <span>当日分时估值</span>
+                                            </div>
+                                            <span style={{ fontSize: '10px', color: '#999' }}>
+                                                {intradayMap[f.code][intradayMap[f.code].length - 1].time}
+                                            </span>
+                                        </summary>
+                                        <div style={{ height: 180, background: 'rgba(0,0,0,0.02)', borderRadius: 8, marginTop: 8 }}>
+                                            <FundIntradayChart data={intradayMap[f.code]} />
+                                        </div>
+                                    </details>
                                 )}
 
                                 {f.estPricedCoverage > 0.05 && (

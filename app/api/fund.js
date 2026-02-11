@@ -423,13 +423,21 @@ export const fetchShanghaiIndexDate = async () => {
 };
 
 export const fetchLatestRelease = async () => {
-  const res = await fetch('https://api.github.com/repos/zhengshengning/fund-baby/releases/latest');
-  if (!res.ok) return null;
-  const data = await res.json();
-  return {
-    tagName: data.tag_name,
-    body: data.body || ''
-  };
+  // 暂时禁用版本检查，避免控制台 404 报错
+  return null;
+  /*
+  try {
+    const res = await fetch('https://api.github.com/repos/zhengshengning/fund-baby/releases/latest');
+    if (!res.ok) return null;
+    const data = await res.json();
+    return {
+      tagName: data.tag_name,
+      body: data.body || ''
+    };
+  } catch (e) {
+    return null;
+  }
+  */
 };
 
 export const submitFeedback = async (formData) => {
@@ -438,4 +446,19 @@ export const submitFeedback = async (formData) => {
     body: formData
   });
   return response.json();
+};
+
+export const fetchIntradayData = async (code) => {
+    try {
+        const response = await fetch(`/api/intraday?code=${code}`);
+        if (!response.ok) return null;
+        const result = await response.json();
+        if (result.success && Array.isArray(result.data)) {
+            return result.data;
+        }
+        return null;
+    } catch (e) {
+        console.error('获取分时数据失败', code, e);
+        return null;
+    }
 };

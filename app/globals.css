@@ -1633,3 +1633,14 @@ input[type="number"] {
     font-size: 10px !important; /* 代码 #123456 */
   }
 }
+
+/* Chart details styling */
+details.chart-details summary {
+  list-style: none; /* Hide default triangle */
+}
+details.chart-details summary::-webkit-details-marker {
+  display: none;
+}
+details.chart-details[open] summary .arrow {
+  transform: rotate(0deg) !important;
+}
