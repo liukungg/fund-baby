@@ -271,6 +271,69 @@ function HoldingActionModal({ fund, onClose, onAction }) {
   );
 }
 
+function TopStocksModal({ fund, onClose }) {
+  return (
+    <motion.div
+      className="modal-overlay"
+      role="dialog"
+      aria-modal="true"
+      aria-label="前10重仓股票"
+      onClick={onClose}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+    >
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95, y: 20 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.95, y: 20 }}
+        className="glass card modal"
+        onClick={(e) => e.stopPropagation()}
+        style={{ maxWidth: '400px' }}
+      >
+        <div className="title" style={{ marginBottom: 20, justifyContent: 'space-between' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <span style={{ fontSize: '18px' }}>📈</span>
+            <span>前10重仓股票</span>
+          </div>
+          <button className="icon-button" onClick={onClose} style={{ border: 'none', background: 'transparent' }}>
+            <CloseIcon width="20" height="20" />
+          </button>
+        </div>
+
+        <div style={{ marginBottom: 16 }}>
+          <div className="fund-name" style={{ fontWeight: 600, fontSize: '16px', marginBottom: 4 }}>{fund?.name}</div>
+          <div className="muted" style={{ fontSize: '12px' }}>#{fund?.code}</div>
+        </div>
+
+        <div className="list" style={{ maxHeight: '50vh', overflowY: 'auto', fontSize: '13px' }}>
+            {Array.isArray(fund?.holdings) && fund.holdings.length > 0 ? (
+                fund.holdings.map((h, idx) => (
+                    <div className="item" key={idx} style={{ padding: '6px 0', borderBottom: idx === fund.holdings.length - 1 ? 'none' : '1px solid var(--border)' }}>
+                        <span className="name" style={{ fontWeight: 500 }}>{h.name}</span>
+                        <div className="values" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                            {typeof h.change === 'number' && (
+                                <span className={`badge ${h.change > 0 ? 'up' : h.change < 0 ? 'down' : ''}`} style={{ fontSize: '12px', padding: '2px 6px' }}>
+                                    {h.change > 0 ? '+' : ''}{h.change.toFixed(2)}%
+                                </span>
+                            )}
+                            <span className="weight muted" style={{ fontSize: '12px' }}>{h.weight}</span>
+                        </div>
+                    </div>
+                ))
+            ) : (
+                <div className="muted" style={{ textAlign: 'center', padding: '20px 0' }}>暂无重仓数据</div>
+            )}
+        </div>
+        
+         <div className="row" style={{ marginTop: 20 }}>
+          <button className="button" onClick={onClose} style={{ width: '100%' }}>关闭</button>
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+}
+
 function TradeModal({ type, fund, holding, onClose, onConfirm, pendingTrades = [], onDeletePending }) {
   const isBuy = type === 'buy';
   const [share, setShare] = useState('');
@@ -1959,6 +2022,7 @@ export default function HomePage() {
   const [addFailures, setAddFailures] = useState([]);
   const [holdingModal, setHoldingModal] = useState({ open: false, fund: null });
   const [actionModal, setActionModal] = useState({ open: false, fund: null });
+  const [topStocksModal, setTopStocksModal] = useState({ open: false, fund: null });
   const [tradeModal, setTradeModal] = useState({ open: false, fund: null, type: 'buy' }); // type: 'buy' | 'sell'
   const [clearConfirm, setClearConfirm] = useState(null); // { fund }
   const [donateOpen, setDonateOpen] = useState(false);
@@ -3669,6 +3733,7 @@ export default function HomePage() {
       logoutConfirmOpen ||
       holdingModal.open ||
       actionModal.open ||
+      topStocksModal.open ||
       tradeModal.open ||
       !!clearConfirm ||
       donateOpen ||
@@ -3697,6 +3762,7 @@ export default function HomePage() {
     logoutConfirmOpen,
     holdingModal.open,
     actionModal.open,
+    topStocksModal.open,
     tradeModal.open,
     clearConfirm,
     donateOpen,
@@ -4649,55 +4715,21 @@ export default function HomePage() {
                                 <div
                                   style={{ marginBottom: 8, cursor: 'pointer', userSelect: 'none' }}
                                   className="title"
-                                  onClick={() => toggleCollapse(f.code)}
+                                  onClick={(e) => {
+                                      e.stopPropagation();
+                                      setTopStocksModal({ open: true, fund: f });
+                                  }}
                                 >
                                   <div className="row" style={{ width: '100%', flex: 1 }}>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                                       <span style={{ fontSize: '12px', color: 'var(--accent)', fontWeight: 500 }}>前10重仓股票</span>
-                                      <ChevronIcon
-                                        width="16"
-                                        height="16"
-                                        className="muted"
-                                        style={{
-                                          transform: collapsedCodes.has(f.code) ? 'rotate(-90deg)' : 'rotate(0deg)',
-                                          transition: 'transform 0.2s ease'
-                                        }}
-                                      />
+                                      <div style={{ transform: 'rotate(-90deg)', display: 'flex', alignItems: 'center' }}>
+                                         <ChevronIcon width="16" height="16" className="muted" />
+                                      </div>
                                     </div>
-                                    <span className="muted" style={{ fontSize: '12px' }}>涨跌幅 / 占比</span>
+                                    <span className="muted" style={{ fontSize: '12px' }}>点击查看详情</span>
                                   </div>
                                 </div>
-                                <AnimatePresence>
-                                  {!collapsedCodes.has(f.code) && (
-                                    <motion.div
-                                      initial={{ height: 0, opacity: 0 }}
-                                      animate={{ height: 'auto', opacity: 1 }}
-                                      exit={{ height: 0, opacity: 0 }}
-                                      transition={{ duration: 0.3, ease: 'easeInOut' }}
-                                      style={{ overflow: 'hidden' }}
-                                    >
-                                      {Array.isArray(f.holdings) && f.holdings.length ? (
-                                        <div className="list">
-                                          {f.holdings.map((h, idx) => (
-                                            <div className="item" key={idx}>
-                                              <span className="name">{h.name}</span>
-                                              <div className="values">
-                                                {typeof h.change === 'number' && (
-                                                  <span className={`badge ${h.change > 0 ? 'up' : h.change < 0 ? 'down' : ''}`} style={{ marginRight: 8 }}>
-                                                    {h.change > 0 ? '+' : ''}{h.change.toFixed(2)}%
-                                                  </span>
-                                                )}
-                                                <span className="weight">{h.weight}</span>
-                                              </div>
-                                            </div>
-                                          ))}
-                                        </div>
-                                      ) : (
-                                        <div className="muted" style={{ padding: '8px 0' }}>暂无重仓数据</div>
-                                      )}
-                                    </motion.div>
-                                  )}
-                                </AnimatePresence>
                               </>
                             )}
                           </motion.div>
@@ -4832,6 +4864,15 @@ export default function HomePage() {
             fund={actionModal.fund}
             onClose={() => setActionModal({ open: false, fund: null })}
             onAction={(type) => handleAction(type, actionModal.fund)}
+          />
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {topStocksModal.open && (
+          <TopStocksModal
+            fund={topStocksModal.fund}
+            onClose={() => setTopStocksModal({ open: false, fund: null })}
           />
         )}
       </AnimatePresence>
