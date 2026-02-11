@@ -449,20 +449,40 @@ export const submitFeedback = async (formData) => {
 };
 
 export const fetchIntradayData = async (code) => {
-    // 纯静态导出模式下无法使用 API Route 代理，暂时禁用分时数据
-    return null;
-    /*
     try {
-        const response = await fetch(`/api/intraday?code=${code}`);
+        // 使用腾讯财经接口，支持 CORS，无需后端代理
+        const url = `https://web.ifzq.gtimg.cn/fund/newfund/fundSsgz/getSsgz?app=web&symbol=jj${code}&_=${Date.now()}`;
+        const response = await fetch(url);
         if (!response.ok) return null;
+
         const result = await response.json();
-        if (result.success && Array.isArray(result.data)) {
-            return result.data;
+        if (result.code === 0 && result.data && Array.isArray(result.data.data)) {
+            const { data: list, yesterdayDwjz } = result.data;
+            const yDwjz = parseFloat(yesterdayDwjz);
+
+            if (!yDwjz) return null;
+
+            return list.map(item => {
+                // item: ["0930", 1.1846, -0.0036] (时间, 估值, 涨跌额)
+                const timeStr = item[0];
+                const value = Number(item[1]);
+
+                // 格式化时间 "0930" -> "09:30"
+                const formattedTime = `${timeStr.slice(0, 2)}:${timeStr.slice(2)}`;
+
+                // 计算涨跌幅
+                const growth = ((value - yDwjz) / yDwjz * 100).toFixed(2);
+
+                return {
+                    time: formattedTime,
+                    value: value,
+                    growth: growth
+                };
+            });
         }
         return null;
     } catch (e) {
         console.error('获取分时数据失败', code, e);
         return null;
     }
-    */
 };
