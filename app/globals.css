@@ -657,14 +657,14 @@ input[type="number"] {
 
   .table-row {
     /* 移动端布局：多行卡片结构 
-       Row 1: Name (占2列) | Change (占1列)
-       Row 2: Profit | Holding | Amount (各占1列)
+       Row 1: Name (占2列) | Amount (占1列) - 交换位置
+       Row 2: Profit | Holding | Change (各占1列) - 交换位置
     */
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
     grid-template-areas:
-      "name name change"
-      "profit holding amount";
+      "name name amount"
+      "change profit holding";
     gap: 8px 4px; /* 行间距8px, 列间距4px */
     padding: 12px !important;
     align-items: center;
@@ -690,16 +690,20 @@ input[type="number"] {
     margin-bottom: 4px;
   }
 
-  /* 涨跌幅区域 */
-  .change-cell {
-    grid-area: change;
-    justify-content: flex-end !important;
+  /* 持仓金额区域 (升级为核心数据) */
+  .holding-amount-cell {
+    grid-area: amount;
+    justify-self: end; /* 自身在网格中靠右 */
+    align-items: center !important; /* 内部内容水平居中 (提示文字与数值对齐) */
+    justify-content: center !important; /* 垂直居中 */
     text-align: right !important;
     font-size: 14px;
     font-weight: 600;
     border-bottom: 1px solid rgba(255,255,255,0.03);
     padding-bottom: 8px;
     margin-bottom: 4px;
+    display: flex !important;
+    flex-direction: column; /* 关键：垂直排列，使伪元素位于上方 */
   }
 
   /* --- Row 2: 次要数据 (带标签) --- */
@@ -707,7 +711,7 @@ input[type="number"] {
   /* 通用样式：垂直排列，带标签 */
   .profit-cell, 
   .holding-cell, 
-  .holding-amount-cell {
+  .change-cell {
     display: flex !important; /* 强制显示 */
     flex-direction: column;
     align-items: flex-start; /* 默认左对齐 */
@@ -720,22 +724,28 @@ input[type="number"] {
   /* 为数据添加 Label 伪元素 */
   .profit-cell::before { content: "当日盈亏"; color: var(--muted); font-size: 10px; margin-bottom: 2px; }
   .holding-cell::before { content: "持有收益"; color: var(--muted); font-size: 10px; margin-bottom: 2px; }
-  .holding-amount-cell::before { content: "持仓金额"; color: var(--muted); font-size: 10px; margin-bottom: 2px; }
+  .change-cell::before { content: "当日涨幅"; color: var(--muted); font-size: 10px; margin-bottom: 2px; }
+  .holding-amount-cell::before { content: "持有金额"; color: var(--muted); font-size: 10px; margin-bottom: 2px; font-weight: normal; }
 
-  /* 具体位置分配 */
+  /* 具体位置分配 - 样式跟随位置调整 */
   .profit-cell {
     grid-area: profit;
-    align-items: flex-start; /* 左对齐 */
+    align-items: center; /* 现居中 */
   }
 
   .holding-cell {
     grid-area: holding;
-    align-items: center; /* 居中对齐 */
+    align-items: flex-end; /* 现居右 */
   }
   
-  .holding-amount-cell {
-    grid-area: amount;
-    align-items: flex-end; /* 右对齐 */
+  .change-cell {
+    grid-area: change;
+    align-items: flex-start; /* 现居左 */
+    /* 重置之前 .change-cell 的第一行特定样式 */
+    border-bottom: none;
+    padding-bottom: 0;
+    margin-bottom: 0;
+    font-weight: normal;
   }
 
   /* 覆盖 page.jsx 中的 text-right 类在 flex-direction: column 下的影响 */

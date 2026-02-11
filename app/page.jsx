@@ -9,7 +9,7 @@ import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
 import Announcement from "./components/Announcement";
 import { DatePicker, DonateTabs, NumericInput, Stat } from "./components/Common";
-import { ChevronIcon, CloseIcon, CloudIcon, DragIcon, ExitIcon, EyeIcon, EyeOffIcon, GridIcon, ListIcon, LoginIcon, LogoutIcon, MailIcon, MoonIcon, PinIcon, PinOffIcon, PlusIcon, RefreshIcon, SettingsIcon, SortIcon, StarIcon, SunIcon, TrashIcon, UpdateIcon, UserIcon } from "./components/Icons";
+import { ChevronIcon, CloseIcon, CloudIcon, DragIcon, EditIcon, ExitIcon, EyeIcon, EyeOffIcon, GridIcon, ListIcon, LoginIcon, LogoutIcon, MailIcon, MoonIcon, PinIcon, PinOffIcon, PlusIcon, RefreshIcon, SettingsIcon, SortIcon, StarIcon, SunIcon, SwitchIcon, TrashIcon, UpdateIcon, UserIcon } from "./components/Icons";
 import githubImg from "./assets/github.svg";
 import wxChatImg from "./assets/wxChat.jpeg";
 import { supabase, isSupabaseConfigured } from './lib/supabase';
@@ -1849,13 +1849,23 @@ function GroupSummary({ funds, holdings, groupName, getProfit }) {
               )}
             </div>
           </div>
-          <div style={{ textAlign: 'right' }}>
-            <div className="muted" style={{ fontSize: '12px', marginBottom: 4 }}>持有收益{showPercent ? '(%)' : ''}</div>
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4, marginBottom: 4 }}>
+              <div className="muted" style={{ fontSize: '12px' }}>持有收益</div>
+              <div 
+                className="icon-button" 
+                style={{ width: 16, height: 16, padding: 0, border: 'none', background: 'transparent' }} 
+                onClick={(e) => { e.stopPropagation(); setShowPercent(!showPercent); }}
+                title="切换显示"
+              >
+                <SwitchIcon width="12" height="12" style={{ color: 'var(--muted)', cursor: 'pointer', opacity: 0.7 }} />
+              </div>
+            </div>
             <div
               className={summary.totalHoldingReturn > 0 ? 'up' : summary.totalHoldingReturn < 0 ? 'down' : ''}
               style={{ fontSize: '18px', fontWeight: 700, fontFamily: 'var(--font-mono)', cursor: 'pointer' }}
               onClick={() => setShowPercent(!showPercent)}
-              title="点击切换金额/百分比"
+              title="点击切换主次显示"
             >
               {isMasked ? (
                 <span style={{ fontSize: metricSize }}>******</span>
@@ -4339,7 +4349,7 @@ export default function HomePage() {
                                           <span className={f.zzl > 0 ? 'up' : f.zzl < 0 ? 'down' : ''} style={{ fontWeight: 700 }}>
                                             {f.zzl !== undefined ? `${f.zzl > 0 ? '+' : ''}${Number(f.zzl).toFixed(2)}%` : ''}
                                           </span>
-                                          <span className="muted" style={{ fontSize: '11px', fontWeight: 600 }}>{f.dwjz ?? '—'}</span>
+                                          <span className="muted" style={{ fontSize: '10px', fontWeight: 500, opacity: 0.8 }}>{f.dwjz ?? '—'}</span>
                                         </div>
                                       </div>
                                     );
@@ -4352,7 +4362,7 @@ export default function HomePage() {
                                             <span className={f.zzl > 0 ? 'up' : f.zzl < 0 ? 'down' : ''} style={{ fontWeight: 700 }}>
                                               {f.zzl !== undefined && f.zzl !== null ? `${f.zzl > 0 ? '+' : ''}${Number(f.zzl).toFixed(2)}%` : '—'}
                                             </span>
-                                            <span className="muted" style={{ fontSize: '11px', fontWeight: 600 }}>{f.dwjz ?? '—'}</span>
+                                            <span className="muted" style={{ fontSize: '10px', fontWeight: 500, opacity: 0.8 }}>{f.dwjz ?? '—'}</span>
                                           </div>
                                         </div>
                                       );
@@ -4368,7 +4378,7 @@ export default function HomePage() {
                                           <span className={estChange > 0 ? 'up' : estChange < 0 ? 'down' : ''} style={{ fontWeight: 700 }}>
                                             {estChangeText}
                                           </span>
-                                          <span className="muted" style={{ fontSize: '11px', fontWeight: 600 }}>{estValue}</span>
+                                          <span className="muted" style={{ fontSize: '10px', fontWeight: 500, opacity: 0.8 }}>{estValue}</span>
                                         </div>
                                       </div>
                                     );
@@ -4398,27 +4408,24 @@ export default function HomePage() {
                                   const profit = getHoldingProfit(f, holding);
                                   const total = profit ? profit.profitTotal : null;
                                   const principal = holding && holding.cost && holding.share ? holding.cost * holding.share : 0;
-                                  const asPercent = percentModes[f.code];
                                   const hasTotal = total !== null;
-                                  const formatted = hasTotal
-                                    ? (asPercent && principal > 0
-                                      ? `${total > 0 ? '+' : total < 0 ? '-' : ''}${Math.abs((total / principal) * 100).toFixed(2)}%`
-                                      : `${total > 0 ? '+' : total < 0 ? '-' : ''}¥${Math.abs(total).toFixed(2)}`)
-                                    : '';
                                   const cls = hasTotal ? (total > 0 ? 'up' : total < 0 ? 'down' : '') : 'muted';
+                                  const profitRate = hasTotal && principal > 0 
+                                    ? ((total / principal) * 100).toFixed(2) + '%' 
+                                    : '0.00%';
+                                  
                                   return (
-                                    <div
-                                      className="table-cell text-right holding-cell"
-                                      title="点击切换金额/百分比"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        if (hasTotal) {
-                                          setPercentModes(prev => ({ ...prev, [f.code]: !prev[f.code] }));
-                                        }
-                                      }}
-                                      style={{ cursor: hasTotal ? 'pointer' : 'default' }}
-                                    >
-                                      <span className={cls} style={{ fontWeight: 700 }}>{formatted}</span>
+                                    <div className="table-cell text-right holding-cell">
+                                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 2 }}>
+                                        <span className={cls} style={{ fontWeight: 700 }}>
+                                          {hasTotal ? `${total > 0 ? '+' : total < 0 ? '-' : ''}¥${Math.abs(total).toFixed(2)}` : '--'}
+                                        </span>
+                                        {hasTotal && (
+                                          <span className={cls} style={{ fontSize: '10px', fontWeight: 500, opacity: 0.8 }}>
+                                            {total > 0 ? '+' : total < 0 ? '' : ''}{profitRate}
+                                          </span>
+                                        )}
+                                      </div>
                                     </div>
                                   );
                                 })()}
@@ -4440,9 +4447,12 @@ export default function HomePage() {
                                       }}
                                       style={{ cursor: 'pointer' }}
                                     >
-                                      <span style={{ fontWeight: 700, color: amount !== null ? 'var(--text)' : 'var(--muted)' }}>
-                                        {amount !== null ? `¥${amount.toFixed(2)}` : '--'}
-                                      </span>
+                                      <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                                        <span style={{ fontWeight: 700, color: amount !== null ? 'var(--text)' : 'var(--muted)' }}>
+                                          {amount !== null ? `¥${amount.toFixed(2)}` : '--'}
+                                        </span>
+                                        <EditIcon width="14" height="14" style={{ color: 'var(--muted)', opacity: 0.6 }} />
+                                      </div>
                                     </div>
                                   );
                                 })()}
@@ -4737,11 +4747,10 @@ export default function HomePage() {
       </AnimatePresence>
 
       <div className="footer">
-        <div style={{ color: '#ff4d4f', fontSize: '13px', marginBottom: '12px', fontWeight: 500 }}>
+        <p style={{ marginBottom: 8 }}>数据源：实时估值与重仓直连东方财富，仅供个人学习及参考使用，不作为任何投资建议</p>
+        <div style={{ marginBottom: '12px' }}>
           提示：不登陆个人数据保存在个人浏览器中，登陆后数据将保存在线上数据库
         </div>
-        <p style={{ marginBottom: 8 }}>数据源：实时估值与重仓直连东方财富，仅供个人学习及参考使用。数据可能存在延迟，不作为任何投资建议</p>
-        <p style={{ marginBottom: 12 }}>注：估算数据与真实结算数据会有1%左右误差，非股票型基金误差较大</p>
         <div style={{ marginTop: 12, opacity: 0.8, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
           <p style={{ margin: 0 }}>
             遇到任何问题或需求建议可
